@@ -42,27 +42,32 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 }
 
 export async function generateStaticParams() {
-  const payload = await getPayload({ config: configPromise })
-  const pages = await payload.find({
-    collection: 'pages',
-    draft: false,
-    limit: 1000,
-    overrideAccess: false,
-    pagination: false,
-    select: {
-      slug: true,
-    },
-  })
-
-  const params = pages.docs
-    ?.filter((doc) => {
-      return doc.slug !== 'home'
-    })
-    .map(({ slug }) => {
-      return { slug }
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const pages = await payload.find({
+      collection: 'pages',
+      draft: false,
+      limit: 1000,
+      overrideAccess: false,
+      pagination: false,
+      select: {
+        slug: true,
+      },
     })
 
-  return params
+    const params = pages.docs
+      ?.filter((doc) => {
+        return doc.slug !== 'home'
+      })
+      .map(({ slug }) => {
+        return { slug }
+      })
+
+    return params
+  } catch {
+    // Database may not be available during build
+    return []
+  }
 }
 
 async function queryPageBySlug({ slug, draft }: { slug: string; draft: boolean }) {
