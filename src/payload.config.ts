@@ -9,6 +9,15 @@ import { r2Storage } from '@payloadcms/storage-r2'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
+import { Categories } from './collections/Categories'
+import { Pages } from './collections/Pages'
+import { Posts } from './collections/Posts'
+import { Header } from './Header/config'
+import { Footer } from './Footer/config'
+import { plugins } from './plugins'
+import { getServerSideURL } from './utilities/getURL'
+
+import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -27,19 +36,35 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    livePreview: {
+      breakpoints: [
+        { label: 'Mobile', name: 'mobile', width: 375, height: 667 },
+        { label: 'Tablet', name: 'tablet', width: 768, height: 1024 },
+        { label: 'Desktop', name: 'desktop', width: 1440, height: 900 },
+      ],
+    },
   },
-  collections: [Users, Media],
+  collections: [Users, Media, Categories, Pages, Posts],
+  globals: [Header, Footer],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: sqliteD1Adapter({ binding: cloudflare.env.D1 }),
+  serverURL: getServerSideURL(),
   plugins: [
     r2Storage({
       bucket: cloudflare.env.R2,
       collections: { media: true },
     }),
+      nestedDocsPlugin({
+      collections: ['pages'],
+      generateLabel: (_, doc) => (doc as { title?: string }).title || '',
+      generateURL: (docs) =>
+        docs.reduce((url, doc) => `${url}/${(doc as { slug?: string }).slug || ''}`, ''),
+    }),
+    ...plugins,
   ],
 })
 

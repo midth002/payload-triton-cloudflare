@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm add:*)",
+      "Bash(pnpm generate:types:*)",
+      "Bash(pnpm generate:importmap:*)",
+      "Bash(pnpm payload migrate:create:*)",
+      "Bash(pnpm payload:*)",
+      "Bash(pnpm build:*)",
+      "Bash(npx opennextjs-cloudflare build:*)",
+      "Bash(pnpm run deploy:*)"
+    ]
+  }
+}
